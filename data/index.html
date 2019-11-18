@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="style.css" />
+
+    <title>De Weerman</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+  </head>
+
+  <body onload="javascript:init()">
+    <div class="container mt-4 mx-auto">
+      <h1 class="text-center text-4xl text-gray-700">De Weerman</h1>
+    </div>
+
+    <div class="container mt-5 mx-auto px-2 max-w-3xl">
+      <div class="sm:flex">
+
+        <div id="divwindsnelheid" class="flex-1 text-gray-700 text-center bg-blue-200 px-5 py-5 m-3 shadow-lg hover:shadow-2xl hover:bg-blue-300 transition-all cursor-pointer rounded">
+          <div class="flex items-center justify-between flex-row md:flex-col">
+            <span class="icon-air-sock1 text-6xl md:text-12xl"></span>
+            <div class="px-3">
+              <div class="text-2xl md:text-3xl">
+                <p id="pwindsnelheid">0 m/s</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="divwindrichting" class="flex-1 text-gray-700 text-center bg-red-200 px-5 py-5 m-3 shadow-lg hover:shadow-2xl hover:bg-red-300 transition-all cursor-pointer rounded">
+            <div class="flex items-center justify-between flex-row md:flex-col">
+              <span class="icon-compass text-6xl md:text-12xl"></span>
+              <div class="px-3">
+                <div class="text-2xl md:text-3xl">
+                  <p id="pwindrichting">N</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      </div>
+      <div class="sm:flex">
+        <div id="divtemperatuur" class="flex-1 text-gray-700 text-center bg-green-200 px-5 py-5 m-3 shadow-lg hover:shadow-2xl hover:bg-green-300 transition-all cursor-pointer rounded">
+          <div class="flex items-center justify-between flex-row md:flex-col">
+            <span class="icon-thermometer-half text-6xl md:text-12xl"></span>
+            <div class="px-3">
+              <div class="text-2xl md:text-3xl">
+                <p id="ptemperatuur">0.0 &#8451</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="divhumidity" class="flex-1 text-gray-700 text-center bg-purple-200 px-5 py-5 m-3 shadow-lg hover:shadow-2xl hover:bg-purple-300 transition-all cursor-pointer rounded">
+          <div class="flex items-center justify-between flex-row md:flex-col">
+            <span class="icon-raindrop1 text-6xl md:text-12xl"></span>
+            <div class="px-3">
+              <div class="text-2xl md:text-3xl">
+                <p id="phumidity">0.0 %</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script src="./scripts.js"></script>
+</html>
