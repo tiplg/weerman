@@ -16,7 +16,7 @@ const char *password = STAPSK;
 
 const char *softAPName = "De Weerman";
 
-const char *OTAauth = "6bd5e09202c765c4f0cee992644082d9";
+const char *OTAauth = OTAAUTH;
 
 //fucntion prototypes
 void handleRoot();
