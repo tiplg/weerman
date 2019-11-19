@@ -1,3 +1,11 @@
+/*
+TODO asyinc web server
+TODO windsnelheid 
+TODO windrichting 
+
+FIXME websockets ios?
+        -eerste data meesturen index.html
+*/
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
