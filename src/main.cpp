@@ -1,9 +1,10 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <ArduinoOTA.h>
-#include <ESP8266WebServer.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include <DNSServer.h>
 #include <WebSocketsServer.h>
+#include <ArduinoOTA.h>
 #include <FS.h>
 #include <DHT.h>
 #include <string>
@@ -19,20 +20,20 @@ const char *softAPName = "De Weerman";
 const char *OTAauth = OTAAUTH;
 
 //fucntion prototypes
-void handleRoot();
-void handleStyles();
-void startWifiAP();
+void startSoftAP();
 void startDNSServer();
 void startWebsockets();
 void startHTTPServer();
 void startOTAServer();
 void startWifiStation();
 const char *get_filename_ext(const char *filename);
+void printMAC(byte mac[6]);
+char *MACtoString(byte mac[6]);
 
 const byte DNS_PORT = 53;
 const IPAddress apIP(192, 168, 1, 1);
 DNSServer dnsServer;
-ESP8266WebServer httpServer(80);
+AsyncWebServer httpServer(80);
 WebSocketsServer webSocketServer(81);
 
 unsigned long currentMillis = 0; // used for timing
@@ -52,7 +53,7 @@ void setup()
 
   WiFi.mode(WIFI_AP_STA);
 
-  startWifiAP();
+  startSoftAP();
   startDNSServer();
   startWebsockets();
   startHTTPServer();
@@ -89,61 +90,44 @@ void loop()
 
   ArduinoOTA.handle();
   dnsServer.processNextRequest();
-  httpServer.handleClient();
   webSocketServer.loop();
 }
 
-void handleRoot()
+void handleRoot(AsyncWebServerRequest *request)
 {
-  File file = SPIFFS.open("/index.html", "r");
-  httpServer.streamFile(file, "text/html");
-  file.close();
-}
-
-void handleScripts()
-{
-  File file = SPIFFS.open("/scripts.js", "r");
-  httpServer.streamFile(file, "text/javascript");
-  file.close();
-}
-
-void handleStyles()
-{
-  File file = SPIFFS.open("/style.css", "r");
-  httpServer.streamFile(file, "text/css");
-  file.close();
-}
-
-void handleIcon()
-{
-  File file = SPIFFS.open("/favicon.ico", "r");
-  httpServer.streamFile(file, "image/x-icon");
-  file.close();
-}
-
-void handleIcons()
-{
-  File file = SPIFFS.open("/icons.woff", "r");
-  httpServer.streamFile(file, "font/woff");
-  file.close();
+  request->send(SPIFFS, "/index.html");
 }
 
 void startHTTPServer()
 {
-  httpServer.on("/", handleRoot);
-  httpServer.on("/scripts.js", handleScripts);
-  httpServer.on("/style.css", handleStyles);
-  httpServer.on("/icons.woff", handleIcons);
-  httpServer.on("/favicon.ico", handleIcon);
+  httpServer.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html"); //.setCacheControl("max-age=600");
   httpServer.onNotFound(handleRoot);
   httpServer.begin();
   Serial.println("HTTP server started");
 }
 
-void startWifiAP()
+void logSoftAPConnect(WiFiEventSoftAPModeStationConnected event)
 {
+  Serial.print("CONNECTED\t\tMAC: ");
+  printMAC(event.mac);
+  Serial.print(" aid: ");
+  Serial.println(event.aid);
+}
+
+void logSoftAPDisconnect(WiFiEventSoftAPModeStationDisconnected event)
+{
+  Serial.print("DISCONNECTED\tMAC: ");
+  printMAC(event.mac);
+  Serial.print(" aid: ");
+  Serial.println(event.aid);
+}
+
+void startSoftAP()
+{
+  WiFi.onSoftAPModeStationConnected(logSoftAPConnect);
+  WiFi.onSoftAPModeStationDisconnected(logSoftAPDisconnect);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  bool result = WiFi.softAP(softAPName);
+  bool result = WiFi.softAP(softAPName, "", 1, 0, 8);
   Serial.print("SoftAP ");
   Serial.print(result ? "Connected" : "Failed!");
   Serial.print("   IP:");
@@ -193,4 +177,28 @@ const char *get_filename_ext(const char *filename)
   if (!dot || dot == filename)
     return "";
   return dot + 1;
+}
+
+void printMAC(byte mac[6])
+{
+  Serial.print("MAC: ");
+  Serial.print(mac[5], HEX);
+  Serial.print(":");
+  Serial.print(mac[4], HEX);
+  Serial.print(":");
+  Serial.print(mac[3], HEX);
+  Serial.print(":");
+  Serial.print(mac[2], HEX);
+  Serial.print(":");
+  Serial.print(mac[1], HEX);
+  Serial.print(":");
+  Serial.println(mac[0], HEX);
+}
+
+char *MACtoString(byte mac[6])
+{
+  char macStr[18];
+  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+  return macStr;
 }

@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "*.h\u0000h": "cpp"
+        "*.h\u0000h": "cpp",
+        "array": "cpp"
     }
 }
