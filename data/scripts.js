@@ -2,8 +2,8 @@ var Socket;
 var data;
 
 function init() {
-  //Socket = new WebSocket("ws://" + window.location.hostname + ":81/");
-  Socket = new WebSocket("ws://192.168.0.13:81/");
+  Socket = new WebSocket("ws://" + window.location.hostname + ":81/");
+  //Socket = new WebSocket("ws://192.168.0.13:81/");
 
   Socket.onmessage = function(event) {
     data = event.data.split(",");
