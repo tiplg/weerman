@@ -36,6 +36,9 @@ DNSServer dnsServer;
 AsyncWebServer httpServer(80);
 WebSocketsServer webSocketServer(81);
 
+WiFiEventHandler stationConnectedHandler;
+WiFiEventHandler stationDisconnectedHandler;
+
 unsigned long currentMillis = 0; // used for timing
 unsigned long sendSomethingMillis = 0;
 
@@ -108,24 +111,19 @@ void startHTTPServer()
 
 void logSoftAPConnect(WiFiEventSoftAPModeStationConnected event)
 {
-  Serial.print("CONNECTED\t\tMAC: ");
-  printMAC(event.mac);
-  Serial.print(" aid: ");
-  Serial.println(event.aid);
+  //TODO log to file
+  Serial.printf("CONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
 }
 
 void logSoftAPDisconnect(WiFiEventSoftAPModeStationDisconnected event)
 {
-  Serial.print("DISCONNECTED\tMAC: ");
-  printMAC(event.mac);
-  Serial.print(" aid: ");
-  Serial.println(event.aid);
+  Serial.printf("DISCONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
 }
 
 void startSoftAP()
 {
-  WiFi.onSoftAPModeStationConnected(logSoftAPConnect);
-  WiFi.onSoftAPModeStationDisconnected(logSoftAPDisconnect);
+  stationConnectedHandler = WiFi.onSoftAPModeStationConnected(&logSoftAPConnect);
+  stationDisconnectedHandler = WiFi.onSoftAPModeStationDisconnected(&logSoftAPDisconnect);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
   bool result = WiFi.softAP(softAPName, "", 1, 0, 8);
   Serial.print("SoftAP ");
@@ -177,28 +175,4 @@ const char *get_filename_ext(const char *filename)
   if (!dot || dot == filename)
     return "";
   return dot + 1;
-}
-
-void printMAC(byte mac[6])
-{
-  Serial.print("MAC: ");
-  Serial.print(mac[5], HEX);
-  Serial.print(":");
-  Serial.print(mac[4], HEX);
-  Serial.print(":");
-  Serial.print(mac[3], HEX);
-  Serial.print(":");
-  Serial.print(mac[2], HEX);
-  Serial.print(":");
-  Serial.print(mac[1], HEX);
-  Serial.print(":");
-  Serial.println(mac[0], HEX);
-}
-
-char *MACtoString(byte mac[6])
-{
-  char macStr[18];
-  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-  return macStr;
 }
