@@ -1,10 +1,8 @@
 /*
-TODO asyinc web server
 TODO windsnelheid 
-TODO windrichting 
 
 FIXME websockets ios?
-        -eerste data meesturen index.html
+        -eerste data meesturen met index.html voor als websockets fail
 */
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -16,6 +14,7 @@ FIXME websockets ios?
 #include <FS.h>
 #include <DHT.h>
 #include <string>
+#include <Anemo.h>
 #include "../include/credentials.h"
 
 using namespace std;
@@ -51,6 +50,7 @@ unsigned long currentMillis = 0; // used for timing
 unsigned long sendSomethingMillis = 0;
 
 DHT dht;
+Windvaan windvaan;
 
 void setup()
 {
@@ -61,6 +61,7 @@ void setup()
   SPIFFS.begin();
 
   pinMode(2, OUTPUT);
+  pinMode(12, INPUT);
 
   WiFi.mode(WIFI_AP_STA);
 
@@ -72,12 +73,13 @@ void setup()
   startWifiStation();
 
   dht.setup(13);
+  windvaan.Setup(A0, 950, 0, 100);
 
   currentMillis = millis();
   sendSomethingMillis = currentMillis;
 }
 
-int windrichting = 0;
+float windrichting;
 int windsnelheid = 0;
 
 void loop()
@@ -86,18 +88,23 @@ void loop()
 
   if (currentMillis - sendSomethingMillis > 1 * 1000) //set delay , DHT minimum = 2000ms
   {
-    if (windrichting++ >= 360)
-      windrichting = 0;
+
+    windrichting = windvaan.getRichting();
+    if (windrichting > 360.0)
+      windrichting = 360.0;
+
     if (windsnelheid++ >= 100)
       windsnelheid = 0;
 
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%i,%i,%.1f,%.1f", windsnelheid, windrichting, dht.getTemperature(), dht.getHumidity());
+    snprintf(buffer, sizeof(buffer), "%i,%.0f,%.1f,%.1f", windsnelheid, windrichting, dht.getTemperature(), dht.getHumidity());
 
     webSocketServer.broadcastTXT(buffer);
 
     sendSomethingMillis = currentMillis;
   }
+
+  digitalWrite(2, digitalRead(12));
 
   ArduinoOTA.handle();
   dnsServer.processNextRequest();
@@ -175,12 +182,4 @@ void startWifiStation()
   }
   Serial.print("Station IP: ");
   Serial.println(WiFi.localIP());
-}
-
-const char *get_filename_ext(const char *filename)
-{
-  const char *dot = strrchr(filename, '.');
-  if (!dot || dot == filename)
-    return "";
-  return dot + 1;
 }
