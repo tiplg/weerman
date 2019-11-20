@@ -1,6 +1,4 @@
 /*
-TODO windsnelheid 
-
 FIXME websockets ios?
         -eerste data meesturen met index.html voor als websockets fail
 */
@@ -51,6 +49,7 @@ unsigned long sendSomethingMillis = 0;
 
 DHT dht;
 Windvaan windvaan;
+Anemometer anemometer;
 
 void setup()
 {
@@ -58,10 +57,10 @@ void setup()
   Serial.begin(500000);
   Serial.println("Booting");
 
-  SPIFFS.begin();
-
   pinMode(2, OUTPUT);
-  pinMode(12, INPUT);
+  digitalWrite(2, LOW);
+
+  SPIFFS.begin();
 
   WiFi.mode(WIFI_AP_STA);
 
@@ -70,17 +69,18 @@ void setup()
   startWebsockets();
   startHTTPServer();
   startOTAServer();
+  //TODO remove in release
   startWifiStation();
 
   dht.setup(13);
   windvaan.Setup(A0, 950, 0, 100);
+  anemometer.Setup(12, 60000);
 
   currentMillis = millis();
   sendSomethingMillis = currentMillis;
-}
 
-float windrichting;
-int windsnelheid = 0;
+  digitalWrite(2, HIGH);
+}
 
 void loop()
 {
@@ -89,22 +89,17 @@ void loop()
   if (currentMillis - sendSomethingMillis > 1 * 1000) //set delay , DHT minimum = 2000ms
   {
 
-    windrichting = windvaan.getRichting();
+    float windrichting = windvaan.getRichting();
     if (windrichting > 360.0)
       windrichting = 360.0;
 
-    if (windsnelheid++ >= 100)
-      windsnelheid = 0;
-
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%i,%.0f,%.1f,%.1f", windsnelheid, windrichting, dht.getTemperature(), dht.getHumidity());
+    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windrichting, dht.getTemperature(), dht.getHumidity());
 
     webSocketServer.broadcastTXT(buffer);
 
     sendSomethingMillis = currentMillis;
   }
-
-  digitalWrite(2, digitalRead(12));
 
   ArduinoOTA.handle();
   dnsServer.processNextRequest();
@@ -132,6 +127,7 @@ void logSoftAPConnect(WiFiEventSoftAPModeStationConnected event)
 
 void logSoftAPDisconnect(WiFiEventSoftAPModeStationDisconnected event)
 {
+  //TODO log to file
   Serial.printf("DISCONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
 }
 
@@ -176,10 +172,16 @@ void startOTAServer()
 void startWifiStation()
 {
   WiFi.begin(ssid, password);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED)
+
+  //FIXME continue if connection failed
+  if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.println("Wifi connection Failed! (station)");
+    WiFi.mode(WIFI_AP);
   }
-  Serial.print("Station IP: ");
-  Serial.println(WiFi.localIP());
+  else
+  {
+    Serial.print("Station IP: ");
+    Serial.println(WiFi.localIP());
+  }
 }

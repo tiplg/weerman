@@ -2,6 +2,8 @@
 
 #include "Anemo.h"
 
+void interrupt();
+
 Windvaan::Windvaan()
 {
 }
@@ -23,12 +25,48 @@ void Windvaan::Setup(int _pin, int _sensorMax, int _sensorMin, int _samples)
 
 float Windvaan::getRichting()
 {
-    for (size_t i = 0; i < samples; i++)
+    for (int i = 0; i < samples; i++)
     {
         sensorData += analogRead(sensorPin);
     }
     sensorData /= samples;
-    //TODO automatic
 
     return (float)sensorData / sensorMax * 360.0;
+}
+
+Anemometer *a;
+
+Anemometer::Anemometer()
+{
+}
+
+void Anemometer::Setup(int _pin, int _breukteller)
+{
+    a = this;
+
+    sensorPin = _pin;
+    lastTimestamp = millis();
+    breukteller = _breukteller;
+
+    pinMode(sensorPin, INPUT);
+
+    attachInterrupt(sensorPin, interrupt, FALLING);
+}
+
+float Anemometer::getSnelheid()
+{
+    //TODO improve for low intervals
+    sensorData = (float)breukteller / interval;
+    return sensorData;
+}
+
+void Anemometer::HandleInterrupt()
+{
+    interval = millis() - lastTimestamp;
+    lastTimestamp = millis();
+}
+
+void ICACHE_RAM_ATTR interrupt() //TODO debounce this shit
+{
+    a->HandleInterrupt();
 }
