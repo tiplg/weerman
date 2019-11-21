@@ -1,5 +1,3 @@
-//TODO automatic sensormax updating
-
 #include "Anemo.h"
 
 Windvaan::Windvaan()
@@ -29,9 +27,20 @@ float Windvaan::getRichting()
     }
     sensorData /= samples;
 
-    //TODO limit to 360
+    if (sensorData > sensorMax)
+    {
+        //TEST sensormax
+        sensorMax = sensorData;
+    }
 
-    return (float)sensorData / sensorMax * 360.0;
+    sensorData = (float)sensorData / sensorMax * 360;
+
+    if (sensorData > 360.0)
+    {
+        sensorData = 360.0;
+    }
+
+    return sensorData;
 }
 
 Anemometer::Anemometer()

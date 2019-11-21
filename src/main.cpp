@@ -88,20 +88,15 @@ void loop()
 
   if (currentMillis - sendSomethingMillis > 1 * 1000) //set delay , DHT minimum = 2000ms
   {
-
-    float windrichting = windvaan.getRichting();
-    if (windrichting > 360.0)
-      windrichting = 360.0;
-
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windrichting, dht.getTemperature(), dht.getHumidity());
+    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), dht.getTemperature(), dht.getHumidity());
 
     webSocketServer.broadcastTXT(buffer);
 
     sendSomethingMillis = currentMillis;
   }
 
-  anemometer.Handle();
+  anemometer.Handle(); //TEST handle speed
 
   ArduinoOTA.handle();
   dnsServer.processNextRequest();
