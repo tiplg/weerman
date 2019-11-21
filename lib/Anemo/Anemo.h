@@ -23,7 +23,7 @@ class Anemometer
 public:
     Anemometer();
 
-    void Setup(int _pin, int _breukteller);
+    void Setup(int _pin, long _breukteller);
     float getSnelheid();
     void HandleInterrupt();
     void Handle();
@@ -32,7 +32,7 @@ public:
 
     bool armed;
     float sensorData;
-    int breukteller;
+    long breukteller;
     unsigned long lastTimestamp;
     unsigned long interval;
 };

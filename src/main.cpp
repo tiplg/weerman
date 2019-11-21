@@ -74,7 +74,7 @@ void setup()
 
   dht.setup(13);
   windvaan.Setup(A0, 950, 0, 100);
-  anemometer.Setup(12, 60000);
+  anemometer.Setup(12, 60000000);
 
   currentMillis = millis();
   sendSomethingMillis = currentMillis;

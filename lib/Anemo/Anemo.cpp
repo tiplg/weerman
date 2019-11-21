@@ -48,10 +48,10 @@ Anemometer::Anemometer()
     armed = true;
 }
 
-void Anemometer::Setup(int _pin, int _breukteller)
+void Anemometer::Setup(int _pin, long _breukteller)
 {
     sensorPin = _pin;
-    lastTimestamp = millis();
+    lastTimestamp = micros();
     breukteller = _breukteller;
 
     pinMode(sensorPin, INPUT);
@@ -68,10 +68,9 @@ void Anemometer::Handle()
 {
     if (armed && digitalRead(sensorPin))
     {
-        //TODO test with micros()
         armed = false;
-        interval = millis() - lastTimestamp;
-        lastTimestamp = millis();
+        interval = micros() - lastTimestamp;
+        lastTimestamp = micros();
     }
     else if (!armed && !digitalRead(sensorPin))
     {
