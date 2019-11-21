@@ -23,12 +23,49 @@ void Windvaan::Setup(int _pin, int _sensorMax, int _sensorMin, int _samples)
 
 float Windvaan::getRichting()
 {
-    for (size_t i = 0; i < samples; i++)
+    for (int i = 0; i < samples; i++)
     {
         sensorData += analogRead(sensorPin);
     }
     sensorData /= samples;
-    //TODO automatic
+
+    //TODO limit to 360
 
     return (float)sensorData / sensorMax * 360.0;
+}
+
+Anemometer::Anemometer()
+{
+    armed = true;
+}
+
+void Anemometer::Setup(int _pin, int _breukteller)
+{
+    sensorPin = _pin;
+    lastTimestamp = millis();
+    breukteller = _breukteller;
+
+    pinMode(sensorPin, INPUT);
+}
+
+float Anemometer::getSnelheid()
+{
+    //TODO improve for low intervals
+    sensorData = (float)breukteller / interval;
+    return sensorData;
+}
+
+void Anemometer::Handle()
+{
+    if (armed && digitalRead(sensorPin))
+    {
+        //TODO test with micros()
+        armed = false;
+        interval = millis() - lastTimestamp;
+        lastTimestamp = millis();
+    }
+    else if (!armed && !digitalRead(sensorPin))
+    {
+        armed = true; //TODO debounce this shit
+    }
 }
