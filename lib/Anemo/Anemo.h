@@ -26,9 +26,11 @@ public:
     void Setup(int _pin, int _breukteller);
     float getSnelheid();
     void HandleInterrupt();
+    void Handle();
 
     int sensorPin;
 
+    bool armed;
     float sensorData;
     int breukteller;
     unsigned long lastTimestamp;

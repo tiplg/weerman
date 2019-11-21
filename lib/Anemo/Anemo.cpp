@@ -34,23 +34,18 @@ float Windvaan::getRichting()
     return (float)sensorData / sensorMax * 360.0;
 }
 
-Anemometer *a;
-
 Anemometer::Anemometer()
 {
+    armed = true;
 }
 
 void Anemometer::Setup(int _pin, int _breukteller)
 {
-    a = this;
-
     sensorPin = _pin;
     lastTimestamp = millis();
     breukteller = _breukteller;
 
     pinMode(sensorPin, INPUT);
-
-    attachInterrupt(sensorPin, interrupt, FALLING);
 }
 
 float Anemometer::getSnelheid()
@@ -60,13 +55,17 @@ float Anemometer::getSnelheid()
     return sensorData;
 }
 
-void Anemometer::HandleInterrupt()
+void Anemometer::Handle()
 {
-    interval = millis() - lastTimestamp;
-    lastTimestamp = millis();
-}
-
-void ICACHE_RAM_ATTR interrupt() //TODO debounce this shit
-{
-    a->HandleInterrupt();
+    if (armed && digitalRead(sensorPin))
+    {
+        //TODO test with micros()
+        armed = false;
+        interval = millis() - lastTimestamp;
+        lastTimestamp = millis();
+    }
+    else if (!armed && !digitalRead(sensorPin))
+    {
+        armed = true; //TODO debounce this shit
+    }
 }

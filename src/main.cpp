@@ -13,7 +13,7 @@ FIXME websockets ios?
 #include <DHT.h>
 #include <string>
 #include <Anemo.h>
-#include "../include/credentials.h"
+#include "credentials.h"
 
 using namespace std;
 
@@ -100,6 +100,8 @@ void loop()
 
     sendSomethingMillis = currentMillis;
   }
+
+  anemometer.Handle();
 
   ArduinoOTA.handle();
   dnsServer.processNextRequest();
