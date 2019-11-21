@@ -2,8 +2,6 @@
 
 #include "Anemo.h"
 
-void interrupt();
-
 Windvaan::Windvaan()
 {
 }
@@ -30,6 +28,8 @@ float Windvaan::getRichting()
         sensorData += analogRead(sensorPin);
     }
     sensorData /= samples;
+
+    //TODO limit to 360
 
     return (float)sensorData / sensorMax * 360.0;
 }
