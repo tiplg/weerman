@@ -1,7 +1,8 @@
 /*
-FIXME websockets ios?
+  FIXME websockets ios?
         -eerste data meesturen met index.html voor als websockets fail
 */
+
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
@@ -11,7 +12,6 @@ FIXME websockets ios?
 #include <ArduinoOTA.h>
 #include <FS.h>
 #include <DHT.h>
-#include <string>
 #include <Anemo.h>
 #include "credentials.h"
 
@@ -31,9 +31,7 @@ void startWebsockets();
 void startHTTPServer();
 void startOTAServer();
 void startWifiStation();
-const char *get_filename_ext(const char *filename);
-void printMAC(byte mac[6]);
-char *MACtoString(byte mac[6]);
+void startLog();
 
 const byte DNS_PORT = 53;
 const IPAddress apIP(192, 168, 1, 1);
@@ -55,7 +53,7 @@ void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(500000);
-  Serial.println("Booting");
+  Serial.println("Booting...");
 
   pinMode(2, OUTPUT);
   digitalWrite(2, LOW);
@@ -69,7 +67,9 @@ void setup()
   startWebsockets();
   startHTTPServer();
   startOTAServer();
-  //TODO remove in release
+  startLog();
+
+  //TEST remove in release maybe
   startWifiStation();
 
   dht.setup(13);
@@ -80,6 +80,7 @@ void setup()
   sendSomethingMillis = currentMillis;
 
   digitalWrite(2, HIGH);
+  Serial.println("Running...");
 }
 
 void loop()
@@ -103,29 +104,49 @@ void loop()
   webSocketServer.loop();
 }
 
-void handleRoot(AsyncWebServerRequest *request)
+void handleNotFound(AsyncWebServerRequest *request)
 {
-  request->send(SPIFFS, "/index.html");
+  request->redirect("/");
 }
 
 void startHTTPServer()
 {
-  httpServer.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html"); //.setCacheControl("max-age=600");
-  httpServer.onNotFound(handleRoot);
+  httpServer.serveStatic("/admin", SPIFFS, "/admin/log.txt").setAuthentication(ADMINUSER, ADMINPSK);
+  httpServer.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setCacheControl("max-age=600"); //.setCacheControl("max-age=600");
+  httpServer.onNotFound(handleNotFound);
   httpServer.begin();
   Serial.println("HTTP server started");
 }
 
 void logSoftAPConnect(WiFiEventSoftAPModeStationConnected event)
 {
-  //TODO log to file
+
+  File file = SPIFFS.open("/admin/log.txt", "a+");
+  if (!file)
+  {
+    Serial.println("failed to open log.txt");
+    return;
+  }
+
   Serial.printf("CONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
+  file.printf("CONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
+
+  file.close();
 }
 
 void logSoftAPDisconnect(WiFiEventSoftAPModeStationDisconnected event)
 {
-  //TODO log to file
+  File file = SPIFFS.open("/admin/log.txt", "a+");
+  if (!file)
+  {
+    Serial.println("failed to open log.txt");
+    return;
+  }
+
   Serial.printf("DISCONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
+  file.printf("DISCONNECTED\t%02x:%02x:%02x:%02x:%02x:%02x %i\n", event.mac[0], event.mac[1], event.mac[2], event.mac[3], event.mac[4], event.mac[5], event.aid);
+
+  file.close();
 }
 
 void startSoftAP()
@@ -181,4 +202,18 @@ void startWifiStation()
     Serial.print("Station IP: ");
     Serial.println(WiFi.localIP());
   }
+}
+
+void startLog()
+{
+  File file = SPIFFS.open("/admin/log.txt", "a+");
+  if (!file)
+  {
+    Serial.println("failed to open log.txt");
+    return;
+  }
+
+  file.printf("---------------------REBOOT---------------------\n");
+
+  file.close();
 }
