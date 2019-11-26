@@ -60,8 +60,23 @@ void Anemometer::Setup(int _pin, long _breukteller)
 float Anemometer::getSnelheid()
 {
     //TODO improve for low intervals
-    sensorData = (float)breukteller / interval;
-    return sensorData;
+    unsigned long tempInterval = micros() - lastTimestamp;
+
+    if (tempInterval > interval)
+    {
+        if (tempInterval - interval > 3000000)
+        {
+            return 0;
+        }
+        else
+        {
+            return (float)breukteller / tempInterval;
+        }
+    }
+    else
+    {
+        return (float)breukteller / interval;
+    }
 }
 
 void Anemometer::Handle()

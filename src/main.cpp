@@ -1,8 +1,3 @@
-/*
-  FIXME websockets ios?
-        -eerste data meesturen met index.html voor als websockets fail
-*/
-
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
@@ -14,6 +9,11 @@
 #include <DHT.h>
 #include <Anemo.h>
 #include "credentials.h"
+
+/*
+  FIXME websockets ios?
+        -eerste data meesturen met index.html voor als websockets fail
+*/
 
 using namespace std;
 
@@ -195,12 +195,23 @@ void startWifiStation()
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.println("Wifi connection Failed! (station)");
+
     WiFi.mode(WIFI_AP);
   }
   else
   {
-    Serial.print("Station IP: ");
-    Serial.println(WiFi.localIP());
+    Serial.printf("Station IP: %s\n", WiFi.localIP().toString().c_str());
+
+    File file = SPIFFS.open("/admin/log.txt", "a+");
+    if (!file)
+    {
+      Serial.println("failed to open log.txt");
+      return;
+    }
+
+    file.printf("Station IP: %s\n", WiFi.localIP().toString().c_str());
+
+    file.close();
   }
 }
 

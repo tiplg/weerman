@@ -4,6 +4,10 @@
 
 #define STASSID "your_ssid"
 #define STAPSK "your_password"
+
 #define OTAAUTH "OTA_auth_md5"
+
+#define ADMINUSER "admin"
+#define ADMINPSK "password"
 
 #endif
