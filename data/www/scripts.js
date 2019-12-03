@@ -1,5 +1,5 @@
 var Socket;
-var data;
+var data = [%DATA_TEMPLATE%];
 
 const Windrichtingen = ["N", "NE", "E", "SO", "S", "SW", "W", "NW"];
 var WindDeler = 360 / Windrichtingen.length;
@@ -33,8 +33,8 @@ var snelheidMode = SnelheidModes.METERPERSEC;
 var humidityMode = HumidityModes.PERCENT;
 
 function init() {
-  //Socket = new WebSocket("ws://" + window.location.hostname + ":81/");
-  Socket = new WebSocket("ws://192.168.0.13:81/");
+  Socket = new WebSocket("ws://" + window.location.hostname + ":81/");
+  //Socket = new WebSocket("ws://192.168.0.13:81/");
 
   Socket.onmessage = function(event) {
     data = event.data.split(",");
@@ -105,6 +105,11 @@ function init() {
 
     printHumidity();
   };
+
+  printSnelheid();
+  printWindrichting();
+  printTemperatuur();
+  printHumidity();
 }
 
 function printWindrichting() {

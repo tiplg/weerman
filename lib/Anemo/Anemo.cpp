@@ -59,7 +59,7 @@ void Anemometer::Setup(int _pin, long _breukteller)
 
 float Anemometer::getSnelheid()
 {
-    //TODO improve for low intervals
+    //TODO rpm to m/s
     unsigned long tempInterval = micros() - lastTimestamp;
 
     if (tempInterval > interval)

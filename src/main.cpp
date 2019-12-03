@@ -10,11 +10,6 @@
 #include <Anemo.h>
 #include "credentials.h"
 
-/*
-  FIXME websockets ios?
-        -eerste data meesturen met index.html voor als websockets fail
-*/
-
 using namespace std;
 
 const char *ssid = STASSID;
@@ -90,18 +85,29 @@ void loop()
   if (currentMillis - sendSomethingMillis > 1 * 1000) //set delay , DHT minimum = 2000ms
   {
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), dht.getTemperature(), dht.getHumidity());
+    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
 
     webSocketServer.broadcastTXT(buffer);
 
     sendSomethingMillis = currentMillis;
   }
 
-  anemometer.Handle(); //TEST handle speed
+  anemometer.Handle();
 
   ArduinoOTA.handle();
   dnsServer.processNextRequest();
   webSocketServer.loop();
+}
+
+String processor(const String &var)
+{
+  if (var == "DATA_TEMPLATE")
+  {
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", 3.333, windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
+    return buffer;
+  }
+  return String();
 }
 
 void handleNotFound(AsyncWebServerRequest *request)
@@ -112,6 +118,7 @@ void handleNotFound(AsyncWebServerRequest *request)
 void startHTTPServer()
 {
   httpServer.serveStatic("/admin", SPIFFS, "/admin/log.txt").setAuthentication(ADMINUSER, ADMINPSK);
+  httpServer.serveStatic("/scripts.js", SPIFFS, "/www/scripts.js").setTemplateProcessor(processor);
   httpServer.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setCacheControl("max-age=600"); //.setCacheControl("max-age=600");
   httpServer.onNotFound(handleNotFound);
   httpServer.begin();
