@@ -12,6 +12,9 @@
 
 using namespace std;
 
+int internalLed = 2;
+int externalLed = 15;
+
 const char *ssid = STASSID;
 const char *password = STAPSK;
 
@@ -50,8 +53,11 @@ void setup()
   Serial.begin(500000);
   Serial.println("Booting...");
 
-  pinMode(2, OUTPUT);
-  digitalWrite(2, LOW);
+  pinMode(externalLed, OUTPUT);
+  pinMode(internalLed, OUTPUT);
+
+  digitalWrite(externalLed, HIGH);
+  digitalWrite(internalLed, LOW);
 
   SPIFFS.begin();
 
@@ -74,7 +80,7 @@ void setup()
   currentMillis = millis();
   sendSomethingMillis = currentMillis;
 
-  digitalWrite(2, HIGH);
+  digitalWrite(internalLed, HIGH);
   Serial.println("Running...");
 }
 
@@ -84,6 +90,8 @@ void loop()
 
   if (currentMillis - sendSomethingMillis > 1 * 1000) //set delay , DHT minimum = 2000ms
   {
+    digitalWrite(externalLed, digitalRead(externalLed));
+
     char buffer[256];
     snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
 
@@ -104,7 +112,7 @@ String processor(const String &var)
   if (var == "DATA_TEMPLATE")
   {
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", 3.333, windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
+    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
     return buffer;
   }
   return String();
