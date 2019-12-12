@@ -73,9 +73,9 @@ void setup()
   //TEST remove in release maybe
   startWifiStation();
 
-  dht.setup(13);
-  windvaan.Setup(A0, 950, 0, 100);
-  anemometer.Setup(12, 60000000);
+  dht.setup(12);
+  windvaan.Setup(A0, 807, 0, 100);
+  anemometer.Setup(13, 60000000);
 
   currentMillis = millis();
   sendSomethingMillis = currentMillis;
@@ -88,12 +88,15 @@ void loop()
 {
   currentMillis = millis();
 
-  if (currentMillis - sendSomethingMillis > 1 * 1000) //set delay , DHT minimum = 2000ms
+  if (currentMillis - sendSomethingMillis > 1 * 500) //set delay , DHT minimum = 2000ms
   {
-    digitalWrite(externalLed, digitalRead(externalLed));
+    digitalWrite(externalLed, !digitalRead(externalLed));
+    // digitalWrite(internalLed, !digitalRead(internalLed));
+
+    //windvaan.getRichting(); // TODO debug
 
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%.3f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
+    snprintf(buffer, sizeof(buffer), "%.0f,%.0f,%.1f,%.1f", anemometer.getSnelheid(), windvaan.getRichting(), isnan(dht.getTemperature()) ? (float)0 : dht.getTemperature(), isnan(dht.getHumidity()) ? 0 : dht.getHumidity());
 
     webSocketServer.broadcastTXT(buffer);
 
@@ -192,7 +195,7 @@ void startWebsockets()
 
 void startOTAServer()
 {
-  ArduinoOTA.setPasswordHash(OTAauth);
+  //ArduinoOTA.setPasswordHash(OTAauth);
 
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);

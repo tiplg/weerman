@@ -2,7 +2,7 @@ var Socket;
 var data = [%DATA_TEMPLATE%]; //[%DATA_TEMPLATE%];
 var tornado = false;
 
-const Windrichtingen = ["N", "NE", "E", "SO", "S", "SW", "W", "NW"];
+const Windrichtingen = ["N", "NO", "O", "ZO", "Z", "ZW", "W", "NW"];
 var WindDeler = 360 / Windrichtingen.length;
 
 const RichtingModes = {
@@ -38,7 +38,7 @@ function init() {
   //Socket = new WebSocket("ws://192.168.0.19:81/");
 
   Socket.onmessage = function(event) {
-    //data = event.data.split(",");
+    data = event.data.split(",");
 
     printSnelheid();
     printWindrichting();
@@ -148,11 +148,11 @@ function printTemperatuur() {
 }
 
 function printSnelheid() {
-  if (data[0] > 30 && !tornado) {
+  if (data[0] > 33 && !tornado) {
     document.getElementById("windfaan").classList.remove("icon-air-sock1");
     document.getElementById("windfaan").classList.add("icon-tornado");
     tornado = true;
-  } else if (data[0] < 30 && tornado) {
+  } else if (data[0] < 33 && tornado) {
     document.getElementById("windfaan").classList.remove("icon-tornado");
     document.getElementById("windfaan").classList.add("icon-air-sock1");
     tornado = false;

@@ -70,12 +70,12 @@ float Anemometer::getSnelheid()
         }
         else
         {
-            return (float)breukteller / tempInterval;
+            return (float)breukteller / tempInterval / 30;
         }
     }
     else
     {
-        return (float)breukteller / interval;
+        return (float)breukteller / interval / 30;
     }
 }
 
